@@ -1,11 +1,12 @@
 module Sidekiq
   module Datadog
     class TagBuilder
+      SIDEKIQ_GTE_6_5_0 = Gem::Version.new(Sidekiq::VERSION) >= Gem::Version.new('6.5.0')
+
       def initialize(custom_tags = [], skip_tags = [], custom_hostname = nil)
         @tags = Array(custom_tags)
         @skip_tags = Array(skip_tags).map(&:to_s)
-
-        env  = Sidekiq.options[:environment] || ENV['RACK_ENV']
+        env  = (SIDEKIQ_GTE_6_5_0 ? Sidekiq[:environment] : Sidekiq.options[:environment]) || ENV['RACK_ENV']
         host = custom_hostname || ENV['INSTRUMENTATION_HOSTNAME'] || Socket.gethostname
         setup_defaults(host: host, env: env)
       end
